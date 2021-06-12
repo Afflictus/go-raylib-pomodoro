@@ -1,0 +1,1 @@
+hide console    -ldflags -H=windowsgui

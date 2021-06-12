@@ -2,22 +2,24 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
+	fmt.Printf("Hello %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	rl.InitWindow(300, 300, "[TIMER]")
-	rl.SetTargetFPS(10)
+	rl.SetTargetFPS(60)
 	//rl.SetWindowState(rl.FlagWindowAlwaysRun)
 
 	// Time stuff
-	var work, rest int = 25 * 60, 5 * 60
+	var work, rest int = 1 * 60, 1 * 60
 	var current int = work
-	working := false
+	working := true
 	pause := true
-	timerSecond := 10
+	timerSecond := 60
 
 	// Sound stuff
 	rl.InitAudioDevice()
@@ -28,7 +30,7 @@ func main() {
 	var startBtnStatus string
 
 	var vec rl.Vector2
-	clock := fmt.Sprintf("%2d:%2d", work/60, work%60)
+	var clock string // := fmt.Sprintf("%2d:%2d", work/60, work%60)
 	font := rl.GetFontDefault()
 
 	var vecMonkey rl.Vector2
@@ -45,45 +47,38 @@ func main() {
 		vecMonkey = rl.Vector2{300/2 - rl.MeasureTextEx(fontMonkey, clock, 32, 1).X/2, 120}
 
 		if !pause {
-			fmt.Println(work)
 			if working {
 				startBtnStatus = "[WORKING]"
 				baseColor = workColor
-				if current > 0 {
-					if timerSecond > 0 {
-						timerSecond -= 1
-					} else {
-						timerSecond = 60
-						current -= 1
-					}
-				} else {
+				if current <= 0 {
 					current = rest
 					working = !working
 					pause = true
 					rl.PlaySound(ring)
 				}
-			}
-			if !working {
+			} else if !working {
 				startBtnStatus = "[REST]"
 				baseColor = restColor
-				if current > 0 {
-					if timerSecond > 0 {
-						timerSecond -= 1
-					} else {
-						timerSecond = 60
-						current -= 1
-					}
-				} else {
+				if current <= 0 {
 					current = work
 					working = !working
 					pause = true
 					rl.PlaySound(ring)
 				}
 			}
+			if current > 0 {
+				if timerSecond > 0 {
+					timerSecond -= 1
+				} else {
+					timerSecond = 60
+					current -= 1
+				}
+			}
 		} else {
 			startBtnStatus = "[PAUSE]"
 		}
 
+		rl.SetMasterVolume(volume)
 		// Draw
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.White)
@@ -97,7 +92,6 @@ func main() {
 
 		if startStop {
 			pause = !pause
-			working = true
 		}
 
 		//  Drag and Drop stuff
