@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime"
+	"strconv"
 
 	rg "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -15,8 +16,10 @@ func main() {
 	//rl.SetWindowState(rl.FlagWindowAlwaysRun)
 
 	// Time stuff
-	var work, rest int = 1 * 60, 1 * 60
+	var work, rest int = 25, 5
+	var err error
 	var current int = work
+	start := false
 	working := true
 	pause := true
 	timerSecond := 60
@@ -42,6 +45,15 @@ func main() {
 
 	for !rl.WindowShouldClose() {
 		// Update
+		if !start {
+			work, err = strconv.Atoi(rg.TextBox(rl.NewRectangle(10, 10, 100, 40), strconv.Itoa(work)))
+			rest, _ = strconv.Atoi(rg.TextBox(rl.NewRectangle(190, 10, 100, 40), strconv.Itoa(rest)))
+			if err == nil {
+				current = work * 60
+			}
+			fmt.Println(work, err, vec)
+		}
+
 		clock = fmt.Sprintf("%02d:%02d", current/60, current%60)
 		vec = rl.Vector2{300/2 - rl.MeasureTextEx(font, clock, 42, 2).X/2, 50}
 		vecMonkey = rl.Vector2{300/2 - rl.MeasureTextEx(fontMonkey, clock, 32, 1).X/2, 120}
@@ -51,7 +63,7 @@ func main() {
 				startBtnStatus = "[WORKING]"
 				baseColor = workColor
 				if current <= 0 {
-					current = rest
+					current = rest * 60
 					working = !working
 					pause = true
 					rl.PlaySound(ring)
@@ -60,7 +72,7 @@ func main() {
 				startBtnStatus = "[REST]"
 				baseColor = restColor
 				if current <= 0 {
-					current = work
+					current = work * 60
 					working = !working
 					pause = true
 					rl.PlaySound(ring)
@@ -83,7 +95,7 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.White)
 
-		rl.DrawTextEx(font, clock, vec, 42, 2, baseColor)
+		//rl.DrawTextEx(font, clock, vec, 42, 2, baseColor)
 		rl.DrawTextEx(fontMonkey, clock, vecMonkey, 32, 1, baseColor)
 
 		rl.DrawText("VOLUME", 10, 210, 20, rl.Gray)
@@ -92,6 +104,7 @@ func main() {
 
 		if startStop {
 			pause = !pause
+			start = true
 		}
 
 		//  Drag and Drop stuff
